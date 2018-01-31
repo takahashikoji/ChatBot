@@ -1,8 +1,10 @@
-from random import choice, randrange
+import sys
+from random import randrange
 from janome.tokenizer import Tokenizer
-from responder import WhatResponder, RandomResponder, PatternResponder, TemplateResponder
+from responder import WhatResponder, RandomResponder, PatternResponder, TemplateResponder, MarkovResponder
 from dictionary import Dictionary
-import morph
+from morph import analyze
+
 
 
 class Unmo:
@@ -25,26 +27,30 @@ class Unmo:
             'what':   WhatResponder('What', self._dictionary),
             'random': RandomResponder('Random', self._dictionary),
             'pattern': PatternResponder('Pattern', self._dictionary),
-            'template': TemplateResponder('Template', self._dictionary)
+            'template': TemplateResponder('Template', self._dictionary),
+            'markov': MarkovResponder('Markov', self._dictionary),
         }
         self._name = name
         self._responder = self._responders['pattern']
 
-    def dialogue(self, text):
+    def dialogue(self, text, markov_training):
         """ユーザーからの入力を受け取り、Responderに処理させた結果を返す。
         呼び出されるたびにランダムでResponderを切り替える。
         入力をDictionaryに学習させる。"""
         chance = randrange(0, 100)
-        if chance in range(0, 39):
+        chance = 80
+        if chance in range(0, 29):
             self._responder = self._responders['pattern']
-        elif chance in range(40, 69):
+        elif chance in range(30, 49):
             self._responder = self._responders['template']
-        elif chance in range(70, 89):
+        elif chance in range(50, 69):
             self._responder = self._responders['random']
+        elif (chance in range(70, 89))or(markov_training==1):
+            self._responder = self._responders['markov']
         else:
             self._responder = self._responders['what']
 
-        parts = morph.analyze(text)
+        parts = analyze(text)
         response = self._responder.response(text, parts)
         self._dictionary.study(text, parts)
         return response
