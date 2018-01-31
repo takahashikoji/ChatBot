@@ -8,7 +8,6 @@ import dill
 import tqdm
 import morph
 
-
 class Markov:
     """マルコフ連鎖による文章の学習・生成を行う。
     クラス定数:
@@ -89,39 +88,7 @@ class Markov:
 
     def __add_suffix(self, prefix1, prefix2, suffix):
         self._dic[prefix1][prefix2].append(suffix)
+        print('add_suffix', prefix1, prefix2, self._dic[prefix1][prefix2])
 
     def __add_start(self, prefix1):
         self._starts[prefix1] += 1
-
-
-def main():
-    markov = Markov()
-    sep = r'[。?？!！ 　]+'
-    filename = sys.argv[1]
-    dicfile = '{}.dat'.format(filename)
-    if os.path.exists(dicfile):
-        markov.load(dicfile)
-    else:
-        with open(filename, encoding='utf-8') as f:
-            sentences = []
-            for line in f:
-                sentences.extend(re.split(sep, line.strip()))
-        for sentence in sentences:
-            if sentence:
-                markov.add_sentence(morph.analyze(sentence))
-                print('.', end='')
-                sys.stdout.flush()
-        markov.save(dicfile)
-    print('\n')
-
-    while True:
-        line = input('> ')
-        if not line:
-            break
-        parts = morph.analyze(line)
-        keyword = next((word for word, part in parts if morph.is_keyword(part)), '')
-        print(markov.generate(keyword))
-
-
-if __name__ == '__main__':
-    main()
